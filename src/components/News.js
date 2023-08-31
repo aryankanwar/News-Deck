@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import NewsItem from './NewsItem';
+import Spinner from './Spinner';
 
-function News() {
-    const [articles, setArticles] = useState([]);
-    const [loading, setLoading]   = useState(false);
-    const [page, setPage]         = useState(1);
+function News(props) {
+    const [articles, setArticles]         = useState([]);
+    const [loading, setLoading]           = useState(false);
+    const [page, setPage]                 = useState(1);
     const [totalResults, setTotalResults] = useState(0);
+    const[category, setCategory]          = useState(props.category);
 
     useEffect(() => {
         async function fetchData() {
             setLoading(true);
-            const url = `https://newsapi.org/v2/top-headlines?country=in&apiKey=${process.env.API_KEY}&page=${page}&pageSize=20`;
+            const url = `https://newsapi.org/v2/top-headlines?country=in&category=${category}&apiKey=${process.env.API_KEY}&page=${page}&pageSize=20`;
             const response = await fetch(url);
             const parsedData = await response.json();
             setLoading(false);
@@ -18,7 +20,7 @@ function News() {
             setTotalResults(parsedData.totalResults);
         }
         fetchData();
-    }, [page]);
+    }, [page,category]);
 
     const handlePrevClick = async () => {
         if (page > 1) {
@@ -35,8 +37,9 @@ function News() {
     return (
         <div className="container my-3">
             <h1>NewsDeck - Top Headlines</h1>
+            {loading && <Spinner/>}
             <div className="row">
-                {articles.map((element) => (
+                {!loading && articles.map((element) => (
                     <div className="col-md-4" key={element.url}>
                         <NewsItem
                             title={element.title ? element.title : ''}
