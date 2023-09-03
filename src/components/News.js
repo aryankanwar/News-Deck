@@ -16,13 +16,17 @@ const News = (props)=>{
     } 
 
     const updateNews = async ()=> {
-        const url = `https://newsapi.org/v2/top-headlines?country=${props.country}&category=${props.category}&apiKey=${process.env.API_KEY}&page=${page}&pageSize=${props.pageSize}`; 
+        props.setProgress(10);
+        const url = `https://newsapi.org/v2/top-headlines?country=${props.country}&category=${props.category}&apiKey=&page=${page}&pageSize=${props.pageSize}`; 
         setLoading(true)
         let data = await fetch(url);
+        props.setProgress(30);
         let parsedData = await data.json()
+        props.setProgress(70);
         setArticles(parsedData.articles)
         setTotalResults(parsedData.totalResults)
         setLoading(false)
+        props.setProgress(100);
     }
 
     useEffect(() => {
@@ -33,13 +37,13 @@ const News = (props)=>{
 
 
     const fetchMoreData = async () => {   
-        const nextPage = page + 1;
-        setPage(nextPage);
-        const url = `https://newsapi.org/v2/top-headlines?country=${props.country}&category=${props.category}&apiKey=${process.env.API_KEY}&page=${nextPage}&pageSize=${props.pageSize}`;        
+        const url = `https://newsapi.org/v2/top-headlines?country=${props.country}&category=${props.category}&apiKey=&page=${page+1}&pageSize=${props.pageSize}`;        
+        setPage(page+1);
         let data = await fetch(url);
         let parsedData = await data.json()
         setArticles(articles.concat(parsedData.articles))
-        setTotalResults(parsedData.totalResults)
+        setTotalResults(parsedData.totalResults);
+        // console.log("artilcles" + articles.length +"totalrsults"+totalResults);
       };
  
         return (
@@ -50,7 +54,7 @@ const News = (props)=>{
                     dataLength={articles.length}
                     next={fetchMoreData}
                     hasMore={articles.length !== totalResults}
-                    loader={<Spinner/>}
+                    loader={ loading && <Spinner/>}
                 > 
                     <div className="container">
                          
