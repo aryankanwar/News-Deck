@@ -14,6 +14,10 @@ NewsDeck is a single-page news application developed using React. It leverages t
 
 - **Loading Progress Indicator**: Know when new articles are being fetched with the loading progress bar.
 
+
+https://github.com/aryankanwar/News-Deck/assets/13161592/ded413d0-4e57-4c70-90c9-fff14d8c4846
+
+
 ## Getting Started
 
 ### Prerequisites
