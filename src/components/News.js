@@ -1,91 +1,134 @@
-import React, {useEffect, useState} from 'react'
-
-import NewsItem from './NewsItem'
+import React, { useEffect, useState } from 'react';
+import NewsItem from './NewsItem';
 import Spinner from './Spinner';
-import PropTypes from 'prop-types'
-import InfiniteScroll from "react-infinite-scroll-component";
+import PropTypes from 'prop-types';
+import InfiniteScroll from 'react-infinite-scroll-component';
 
-const News = (props)=>{
-    const [articles, setArticles] = useState([])
-    const [loading, setLoading] = useState(true)
-    const [page, setPage] = useState(1)
-    const [totalResults, setTotalResults] = useState(0)
-    
-    const capitalizeFirstLetter = (string) => {
-        return string.charAt(0).toUpperCase() + string.slice(1);
-    } 
+const News = (props) => {
+  const [articles, setArticles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalResults, setTotalResults] = useState(0);
 
-    const updateNews = async ()=> {
-        props.setProgress(10);
-        const url = `https://newsapi.org/v2/top-headlines?country=${props.country}&category=${props.category}&apiKey=${props.apiKey}&page=${page}&pageSize=${props.pageSize}`; 
-        setLoading(true)
-        let data = await fetch(url);
-        props.setProgress(30);
-        let parsedData = await data.json()
-        props.setProgress(70);
-        setArticles(parsedData.articles)
-        setTotalResults(parsedData.totalResults)
-        setLoading(false)
-        props.setProgress(100);
-    }
+  const capitalizeFirstLetter = (string) => {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  };
 
-    useEffect(() => {
-        document.title = `${capitalizeFirstLetter(props.category)} - NewsDeck`;
-        updateNews(); 
-        // eslint-disable-next-line
-    }, [])
+  const updateNews = async () => {
+    props.setProgress(10);
+    const url = `https://newsapi.org/v2/top-headlines?country=${props.country}&category=${props.category}&apiKey=${props.apiKey}&page=${page}&pageSize=${props.pageSize}`;
+    setLoading(true);
+    let data = await fetch(url);
+    props.setProgress(30);
+    let parsedData = await data.json();
+    props.setProgress(70);
+    setArticles(parsedData.articles);
+    setTotalResults(parsedData.totalResults);
+    setLoading(false);
+    props.setProgress(100);
+  };
 
+  useEffect(() => {
+    document.title = `${capitalizeFirstLetter(props.category)} - NewsDeck`;
+    updateNews();
 
-    const fetchMoreData = async () => {   
-        const url = `https://newsapi.org/v2/top-headlines?country=${props.country}&category=${props.category}&apiKey=${props.apiKey}&page=${page+1}&pageSize=${props.pageSize}`;        
-        setPage(page+1);
-        let data = await fetch(url);
-        let parsedData = await data.json()
-        setArticles(articles.concat(parsedData.articles))
-        setTotalResults(parsedData.totalResults);
-        // console.log("artilcles" + articles.length +"totalrsults"+totalResults);
-      };
- 
-        return (
-            <>
-                <h1 className="text-center" style={{ margin: '35px 0px', marginTop: '90px' }}>NewsDeck - Top {capitalizeFirstLetter(props.category)} Headlines</h1>
-                {loading && <Spinner />}
-                <InfiniteScroll
-                    dataLength={articles.length}
-                    next={fetchMoreData}
-                    hasMore={articles.length !== totalResults}
-                    loader={ loading && <Spinner/>}
-                > 
-                    <div className="container">
-                         
-                    <div className="row">
-                        {articles.map((element) => {
-                            return <div className="col-md-4" key={element.url}>
-                                <NewsItem title={element.title ? element.title : ""} description={element.description ? element.description : ""} 
-                                imageUrl={element.urlToImage ? element.urlToImage : "https://media-cldnry.s-nbcnews.com/image/upload/t_nbcnews-fp-1024-512,f_auto,q_auto:best/newscms/2019_01/2705191/nbc-social-default.png"}
+    const handleScroll = () => {
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      const scrollTop = window.scrollY;
 
-                                newsUrl={element.url} author={element.author} date={element.publishedAt} source={element.source.name} />
-                            </div>
-                        })}
-                    </div>
-                    </div> 
-                </InfiniteScroll>
-            </>
-        )
-    
-}
+      if (windowHeight + scrollTop === documentHeight) {
+        setIsAtBottom(true);
+      } else {
+        setIsAtBottom(false);
+      }
+    };
 
+    window.addEventListener('scroll', handleScroll);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const fetchMoreData = async () => {
+    const url = `https://newsapi.org/v2/top-headlines?country=${props.country}&category=${props.category}&apiKey=${props.apiKey}&page=${page + 1}&pageSize=${props.pageSize}`;
+    setPage(page + 1);
+    let data = await fetch(url);
+    let parsedData = await data.json();
+    setArticles(articles.concat(parsedData.articles));
+    setTotalResults(parsedData.totalResults);
+  };
+
+  const [isAtBottom, setIsAtBottom] = useState(false);
+
+  return (
+    <>
+      <h1 className="text-center" style={{ margin: '35px 0px', marginTop: '90px' }}>
+        NewsDeck - Top {capitalizeFirstLetter(props.category)} Headlines
+      </h1>
+      {loading && <Spinner />}
+      <InfiniteScroll
+        dataLength={articles.length}
+        next={fetchMoreData}
+        hasMore={articles.length !== totalResults}
+        loader={loading && <Spinner />}
+      >
+        <div className="container">
+          <div className="row">
+            {articles.map((element) => {
+              return (
+                <div className="col-md-4" key={element.url}>
+                  <NewsItem
+                    title={element.title ? element.title : ''}
+                    description={element.description ? element.description : ''}
+                    imageUrl={
+                      element.urlToImage
+                        ? element.urlToImage
+                        : 'https://media-cldnry.s-nbcnews.com/image/upload/t_nbcnews-fp-1024-512,f_auto,q_auto:best/newscms/2019_01/2705191/nbc-social-default.png'
+                    }
+                    newsUrl={element.url}
+                    author={element.author}
+                    date={element.publishedAt}
+                    source={element.source.name}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </InfiniteScroll>
+      
+    {isAtBottom && (
+        <div className="text-right">
+            <button
+                onClick={scrollToTop}
+                className="btn btn-primary m-3"
+                style={{ position: 'fixed', bottom: '20px', right: '20px' }}
+            >
+                Back to Top
+            </button>
+        </div>
+
+    )}
+    </>
+  );
+};
 
 News.defaultProps = {
-    country: 'in',
-    pageSize: 8,
-    category: 'general',
-}
+  country: 'in',
+  pageSize: 8,
+  category: 'general',
+};
 
 News.propTypes = {
-    country: PropTypes.string,
-    pageSize: PropTypes.number,
-    category: PropTypes.string,
-}
+  country: PropTypes.string,
+  pageSize: PropTypes.number,
+  category: PropTypes.string,
+};
 
-export default News
+export default News;
